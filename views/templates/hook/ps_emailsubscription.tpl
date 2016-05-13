@@ -30,6 +30,12 @@
   {/if}
   <form action="{$urls.pages.index}" method="post">
     <input type="text" name="email" value="{$value}" placeholder="{l s='Your e-mail' mod='ps_emailsubscription'}" />
+    {if $need_confirmation}
+    <span class="custom-checkbox">
+       <input type="checkbox" name="confirm-optin" value="1" required>
+       <label>{l s='I agree to receive newsletter emails and I am aware of [1]the privacy policy[/1]' tags=['<a href="%s">'|sprintf:$link->getCMSLink($cms_page)] mod='ps_emailsubscription'}</label>
+    </span>
+    {/if}
     <input type="submit" value="ok" name="submitNewsletter" />
     <input type="hidden" name="action" value="0" />
   </form>
