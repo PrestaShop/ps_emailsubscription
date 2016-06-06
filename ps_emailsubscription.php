@@ -127,7 +127,13 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         }
 
         Configuration::updateValue('NW_SALT', Tools::passwdGen(16));
-        Configuration::updateValue('NW_CMS_PRIVACY_PAGE', 0);
+
+        $conditions = array();
+        $languages = Language::getLanguages(false);
+        foreach ($languages as $lang) {
+            $conditions[(int)$lang['id_lang']] = $this->l('Please inform your customers about the content of the newsletter, its frequency, the use of personal data and the ways to cancel the subscription.');
+        }
+        Configuration::updateValue('NW_CONDITIONS', $conditions);
         Configuration::updateValue('NW_CONFIRMATION_OPTIN', false);
 
         return Db::getInstance()->execute('
@@ -146,7 +152,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function uninstall()
     {
-        Db::getInstance()->execute('DROP TABLE '._DB_PREFIX_.'newsletter');
+        Db::getInstance()->execute('DROP TABLE IF EXISTS '._DB_PREFIX_.'newsletter');
 
         return parent::uninstall();
     }
@@ -157,12 +163,12 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             Configuration::updateValue('NW_CONFIRMATION_EMAIL', (bool)Tools::getValue('NW_CONFIRMATION_EMAIL'));
             Configuration::updateValue('NW_VERIFICATION_EMAIL', (bool)Tools::getValue('NW_VERIFICATION_EMAIL'));
             $confirmation_optin = (bool)Tools::getValue('NW_CONFIRMATION_OPTIN');
-            $cms_page_privacy_policy = (int)Tools::getValue('NW_CMS_PRIVACY_PAGE');
-            if ($confirmation_optin && !$cms_page_privacy_policy) {
-                $this->_html .= $this->displayError($this->l('Please choose a CMS page for privacy policy'));
+            $conditions = Tools::getValue('NW_CONDITIONS');
+            if ($confirmation_optin && !empty($conditions)) {
+                $this->_html .= $this->displayError($this->l('Please, set newsletter conditions to display to your customers'));
             } else {
                 Configuration::updateValue('NW_CONFIRMATION_OPTIN', $confirmation_optin);
-                Configuration::updateValue('NW_CMS_PRIVACY_PAGE', $cms_page_privacy_policy);
+                Configuration::updateValue('NW_CONDITIONS', $conditions);
             }
 
             $voucher = Tools::getValue('NW_VOUCHER_CODE');
@@ -707,9 +713,9 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     public function renderWidget($hookName = null, array $configuration = [])
     {
         $cacheId = $this->getCacheId();
-        if (Tools::isSubmit('submitNewsletter') || !$this->isCached('ps_emailsubscription.tpl', $cacheId)) {
+        //if (Tools::isSubmit('submitNewsletter') || !$this->isCached('ps_emailsubscription.tpl', $cacheId)) {
             $this->smarty->assign($this->getWidgetVariables($hookName, $configuration));
-        }
+       // }
         if (Tools::isSubmit('submitNewsletter')) {
             $cacheId = null;
         }
@@ -725,7 +731,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $variables['msg'] = '';
         $variables['need_confirmation'] = (bool)Configuration::get('NW_CONFIRMATION_OPTIN');
         if ($variables['need_confirmation']) {
-            $variables['cms_privacy_link'] = $this->context->link->getCMSLink((int)Configuration::get('NW_CMS_PRIVACY_PAGE'));
+            $variables['conditions'] = Configuration::get('NW_CONDITIONS', $this->context->language->id);
         }
 
         if (Tools::isSubmit('submitNewsletter')) {
@@ -814,7 +820,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Require customers to accept privacy policy before subscribing.'),
+                        'label' => $this->l('Require customers to accept newsletter conditions before subscribing'),
                         'name' => 'NW_CONFIRMATION_OPTIN',
                         'values' => array(
                             array(
@@ -831,15 +837,14 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                         'default_value' => 0
                     ),
                     array(
-                        'type' => 'select',
-                        'label' => $this->l('CMS page for privacy policy'),
-                        'desc' => $this->l('Choose the CMS page that contains your store\'s privacy policy.'),
-                        'name' => 'NW_CMS_PRIVACY_PAGE',
-                        'options' => array(
-                            'query' => $this->getCMSRoles(),
-                            'id' => 'id',
-                            'name' => 'name',
-                        )
+                        'type' => 'textarea',
+                        'label' => $this->l('Newsletter conditions'),
+                        'lang' => true,
+                        'name' => 'NW_CONDITIONS',
+                        'cols' => 40,
+                        'rows' => 10,
+                        'class' => 'rte',
+                        'autoload_rte' => true,
                     ),
                 ),
                 'submit' => array(
@@ -1009,12 +1014,19 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function getConfigFieldsValues()
     {
+        $conditions = array();
+        $languages = Language::getLanguages(false);
+        foreach ($languages as $lang)
+        {
+            $conditions[$lang['id_lang']] = Tools::getValue('NW_CONDITIONS'.$lang['id_lang'], Configuration::get('NW_CONDITIONS', $lang['id_lang']));
+        }
+
         return array(
             'NW_VERIFICATION_EMAIL' => Tools::getValue('NW_VERIFICATION_EMAIL', Configuration::get('NW_VERIFICATION_EMAIL')),
             'NW_CONFIRMATION_EMAIL' => Tools::getValue('NW_CONFIRMATION_EMAIL', Configuration::get('NW_CONFIRMATION_EMAIL')),
             'NW_VOUCHER_CODE' => Tools::getValue('NW_VOUCHER_CODE', Configuration::get('NW_VOUCHER_CODE')),
             'NW_CONFIRMATION_OPTIN' => Tools::getValue('NW_CONFIRMATION_OPTIN', Configuration::get('NW_CONFIRMATION_OPTIN')),
-            'NW_CMS_PRIVACY_PAGE' => Tools::getValue('NW_CMS_PRIVACY_PAGE', Configuration::get('NW_CMS_PRIVACY_PAGE')),
+            'NW_CONDITIONS' => $conditions,
             'COUNTRY' => Tools::getValue('COUNTRY'),
             'SUSCRIBERS' => Tools::getValue('SUSCRIBERS'),
             'OPTIN' => Tools::getValue('OPTIN'),
@@ -1065,7 +1077,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $id_lang = Context::getContext()->employee->id_lang;
         $id_shop = Context::getContext()->shop->id;
         $cms_pages = array();
-        
+
         $fake_object = new stdClass();
         $fake_object->id = 0;
         $fake_object->name = $this->l('-- Select associated CMS page --', $this->name);
