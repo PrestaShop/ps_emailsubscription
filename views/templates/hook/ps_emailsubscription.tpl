@@ -30,10 +30,12 @@
   {/if}
   <form action="{$urls.pages.index}" method="post">
     <input type="text" name="email" value="{$value}" placeholder="{l s='Your e-mail' mod='ps_emailsubscription'}" />
-    {if isset($need_confirmation) && $need_confirmation}
+    {if $need_confirmation}
     <span class="custom-checkbox">
        <input type="checkbox" name="confirm-optin" value="1" required>
-       <label>{l s='I agree to receive newsletter emails and I am aware of [1]the privacy policy[/1]' tags=['<a target="_blank" href="%s">'|sprintf:$cms_privacy_link] mod='ps_emailsubscription'}</label>
+       <label>
+         {l s='I want to receive the free newsletter and have read and accepted the [1]conditions[/1].' tags=['<a onclick="alert(\'%s\')">'|sprintf:$conditions] mod='ps_emailsubscription'}
+       </label>
     </span>
     {/if}
     <input type="submit" value="ok" name="submitNewsletter" />
