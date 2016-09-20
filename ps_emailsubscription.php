@@ -791,11 +791,10 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             'Modules.EmailSubscription.Shop'
         );
 
-        return array(
-            (new FormField())
+        return (new FormField())
                 ->setName('newsletter')
                 ->setType('checkbox')
-                ->setLabel($label));
+                ->setLabel($label);
     }
 
     public function renderForm()
