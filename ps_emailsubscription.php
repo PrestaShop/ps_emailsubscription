@@ -1280,5 +1280,5 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 return json_encode($this->l('Newsletter subscription: Unable to export customer using email.'));
             }
         }
-   }
+    }
 }
