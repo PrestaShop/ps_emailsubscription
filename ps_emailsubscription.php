@@ -126,6 +126,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             `ip_registration_newsletter` varchar(15) NOT NULL,
             `http_referer` VARCHAR(255) NULL,
             `active` TINYINT(1) NOT NULL DEFAULT \'0\',
+			`id_lang` int(10) unsigned NULL DEFAULT NULL,
             PRIMARY KEY(`id`)
         ) ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8');
     }
@@ -506,7 +507,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      */
     protected function registerGuest($email, $active = true)
     {
-        $sql = 'INSERT INTO '._DB_PREFIX_.'emailsubscription (id_shop, id_shop_group, email, newsletter_date_add, ip_registration_newsletter, http_referer, active)
+        $sql = 'INSERT INTO '._DB_PREFIX_.'emailsubscription (id_shop, id_shop_group, email, newsletter_date_add, ip_registration_newsletter, http_referer, active, id_lang)
                 VALUES
                 ('.$this->context->shop->id.',
                 '.$this->context->shop->id_shop_group.',
@@ -519,7 +520,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                     WHERE c.id_guest = '.(int) $this->context->customer->id.'
                     ORDER BY c.date_add DESC LIMIT 1
                 ),
-                '.(int) $active.'
+                '.(int) $active.',
+                '.(int) $this->context->language->id.'
                 )';
 
         return Db::getInstance()->execute($sql);
