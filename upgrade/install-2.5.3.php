@@ -26,9 +26,9 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-function upgrade_module_2_3_0($object)
+
+function upgrade_module_2_5_3($object)
 {
-    return ($object->registerHook('registerGDPRConsent') &&
-        $object->registerHook('actionDeleteGDPRCustomer') &&
-        $object->registerHook('actionExportGDPRData'));
+    return $object->registerHook('actionCustomerAccountUpdate')
+        && $object->registerHook('actionObjectCustomerUpdateBefore');
 }

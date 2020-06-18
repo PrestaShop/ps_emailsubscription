@@ -1,28 +1,28 @@
 <?php
-/*
-* 2007-2017 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2017 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+/**
+ * 2007-2020 PrestaShop.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License 3.0 (AFL-3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://opensource.org/licenses/AFL-3.0
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    PrestaShop SA <contact@prestashop.com>
+ * @copyright 2007-2020 PrestaShop SA
+ * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -44,6 +44,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     const CUSTOMER_REGISTERED = 2;
 
     const LEGAL_PRIVACY = 'LEGAL_PRIVACY';
+
+    protected $_origin_newsletter;
 
     const TPL_COLUMN = 'ps_emailsubscription-column.tpl';
     const TPL_DEFAULT = 'ps_emailsubscription.tpl';
@@ -68,7 +70,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
         $this->entity_manager = $entity_manager;
 
-        $this->version = '2.5.1';
+        $this->version = '2.6.0';
         $this->author = 'PrestaShop';
         $this->error = false;
         $this->valid = false;
@@ -100,17 +102,19 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function install()
     {
-        if (
-            !parent::install()
+        if (!parent::install()
             || !$this->registerHook(
                 array(
+                    'actionFrontControllerSetMedia',
                     'displayFooterBefore',
                     'actionCustomerAccountAdd',
+                    'actionObjectCustomerUpdateBefore',
                     'additionalCustomerFormFields',
                     'displayAdminCustomersForm',
                     'registerGDPRConsent',
                     'actionDeleteGDPRCustomer',
                     'actionExportGDPRData',
+                    'actionCustomerAccountUpdate',
                 )
             )
         ) {
@@ -207,7 +211,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             $id = Tools::getValue('id');
 
             if (preg_match('/(^N)/', $id)) {
-                $id = (int) substr($id, 1);
+                $id = (int) Tools::substr($id, 1);
                 $sql = 'UPDATE ' . _DB_PREFIX_ . 'emailsubscription SET active = 0 WHERE id = ' . $id;
                 Db::getInstance()->execute($sql);
             } else {
@@ -381,7 +385,9 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     /**
      * Register in email subscription.
      *
-     * @param string|null $hookName
+     * @param string|null $hookName For widgets displayed by a hook, hook name must be passed
+     * as multiple hooks might be used, so it is necessary to know which one was used for
+     * submitting the form
      *
      * @return bool|string
      */
@@ -389,10 +395,25 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     {
         $isPrestaShopVersionOver177 = version_compare(_PS_VERSION_, '1.7.7', '>=');
 
-        if ($isPrestaShopVersionOver177) {
+        if ($isPrestaShopVersionOver177 && ($hookName !== null)) {
             if (empty($_POST['blockHookName']) || $_POST['blockHookName'] !== $hookName) {
                 return false;
             }
+        }
+
+        // hook for newsletter registration/unregistration : fill-in hookError string is there is an error
+        $hookError = null;
+        Hook::exec(
+            'actionNewsletterRegistrationBefore',
+            [
+                'hookName' => $hookName,
+                'email' => $_POST['email'],
+                'action' => $_POST['action'],
+                'hookError' => &$hookError,
+            ]
+        );
+        if ($hookError !== null) {
+            return $this->error = $hookError;
         }
 
         if (empty($_POST['email']) || !Validate::isEmail($_POST['email'])) {
@@ -452,6 +473,16 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 }
             }
         }
+        // hook
+        Hook::exec(
+            'actionNewsletterRegistrationAfter',
+            [
+                'hookName' => $hookName,
+                'email' => $_POST['email'],
+                'action' => $_POST['action'],
+                'error' => &$this->error,
+            ]
+        );
     }
 
     public function getSubscribers()
@@ -862,6 +893,15 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         return $variables;
     }
 
+    public function hookActionFrontControllerSetMedia()
+    {
+        Media::addJsDef([
+            'psemailsubscription_subscription' => $this->context->link->getModuleLink($this->name, 'subscription', [], true),
+        ]);
+
+        $this->context->controller->registerJavascript('modules-psemailsubscription', 'modules/' . $this->name . '/views/js/ps_emailsubscription.js');
+    }
+
     /**
      * Deletes duplicates email in newsletter table.
      *
@@ -873,14 +913,51 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     {
         //if e-mail of the created user address has already been added to the newsletter through the ps_emailsubscription module,
         //we delete it from ps_emailsubscription table to prevent duplicates
+        if (empty($params['newCustomer'])) {
+            return;
+        }
         $id_shop = $params['newCustomer']->id_shop;
         $email = $params['newCustomer']->email;
+        $newsletter = $params['newCustomer']->newsletter;
         if (Validate::isEmail($email)) {
-            if ($code = Configuration::get('NW_VOUCHER_CODE')) {
+            if ($params['newCustomer']->newsletter && $code = Configuration::get('NW_VOUCHER_CODE')) {
                 $this->sendVoucher($email, $code);
             }
 
             return (bool) Db::getInstance()->execute('DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription WHERE id_shop=' . (int) $id_shop . ' AND email=\'' . pSQL($email) . "'");
+        }
+
+        if ($newsletter) {
+            if (Configuration::get('NW_CONFIRMATION_EMAIL')) {// send confirmation email
+                $this->sendConfirmationEmail($params['newCustomer']->email);
+            }
+            if ($code = Configuration::get('NW_VOUCHER_CODE')) {// send voucher
+                $this->sendVoucher($params['newCustomer']->email, $code);
+            }
+        }
+
+        return true;
+    }
+
+   public function hookActionObjectCustomerUpdateBefore($params)
+   {
+       $customer = new Customer($params['object']->id);
+       $this->_origin_newsletter = (int)$customer->newsletter;
+   }
+
+    public function hookActionCustomerAccountUpdate($params)
+    {
+        if ($this->_origin_newsletter || !$params['customer']->newsletter) {
+            return;
+        }
+        if (Configuration::get('NW_CONFIRMATION_EMAIL')) {// send confirmation email
+            $this->sendConfirmationEmail($params['customer']->email);
+        }
+        if ($code = Configuration::get('NW_VOUCHER_CODE')) {
+            $cartRule = CartRuleCore::getCartsRuleByCode($code, Context::getContext()->language->id);
+            if (! Order::getDiscountsCustomer($params['customer']->id, $cartRule[0])) {// send voucher
+                $this->sendVoucher($params['customer']->email, $code);
+            }
         }
 
         return true;
