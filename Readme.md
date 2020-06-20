@@ -1,5 +1,10 @@
 # E-mail subscription form
 
+[![Build Status](https://travis-ci.com/PrestaShop/ps_emailsubscription.svg?branch=master)](https://travis-ci.com/PrestaShop/ps_emailsubscription)
+[![Latest Stable Version](https://poser.pugx.org/PrestaShop/ps_emailsubscription/v)](//packagist.org/packages/PrestaShop/ps_emailsubscription)
+[![Total Downloads](https://poser.pugx.org/PrestaShop/ps_emailsubscription/downloads)](//packagist.org/packages/PrestaShop/ps_emailsubscription)
+[![GitHub license](https://img.shields.io/github/license/PrestaShop/ps_emailsubscription)](https://github.com/PrestaShop/ps_emailsubscription/LICENSE.md)
+
 ## About
 
 Adds a block for newsletter subscription.
