@@ -17,5 +17,4 @@
       <input type="hidden" name="action" value="1" />
     </form>
   </div>
-
 {/block}
