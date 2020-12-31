@@ -919,20 +919,17 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $id_shop = $params['newCustomer']->id_shop;
         $email = $params['newCustomer']->email;
         $newsletter = $params['newCustomer']->newsletter;
-        if (Validate::isEmail($email)) {
-            if ($params['newCustomer']->newsletter && $code = Configuration::get('NW_VOUCHER_CODE')) {
-                $this->sendVoucher($email, $code);
-            }
 
+        if ($this->isNewsletterRegistered($email) == self::GUEST_REGISTERED) {
             return (bool) Db::getInstance()->execute('DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription WHERE id_shop=' . (int) $id_shop . ' AND email=\'' . pSQL($email) . "'");
         }
 
         if ($newsletter) {
             if (Configuration::get('NW_CONFIRMATION_EMAIL')) {// send confirmation email
-                $this->sendConfirmationEmail($params['newCustomer']->email);
+                $this->sendConfirmationEmail($email);
             }
             if ($code = Configuration::get('NW_VOUCHER_CODE')) {// send voucher
-                $this->sendVoucher($params['newCustomer']->email, $code);
+                $this->sendVoucher($email, $code);
             }
         }
 
