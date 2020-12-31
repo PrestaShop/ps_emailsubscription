@@ -212,7 +212,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
             if (preg_match('/(^N)/', $id)) {
                 $id = (int) Tools::substr($id, 1);
-                $sql = 'UPDATE ' . _DB_PREFIX_ . 'emailsubscription SET active = 0 WHERE id = ' . $id;
+                $sql = 'UPDATE ' . _DB_PREFIX_ . 'emailsubscription NOT active WHERE id = ' . $id;
                 Db::getInstance()->execute($sql);
             } else {
                 $c = new Customer((int) $id);
@@ -493,7 +493,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $dbquery->leftJoin('shop', 's', 's.id_shop = c.id_shop');
         $dbquery->leftJoin('gender', 'g', 'g.id_gender = c.id_gender');
         $dbquery->leftJoin('gender_lang', 'gl', 'g.id_gender = gl.id_gender AND gl.id_lang = ' . (int) $this->context->employee->id_lang);
-        $dbquery->where('c.`newsletter` = 1');
         $dbquery->leftJoin('lang', 'l', 'l.id_lang = c.id_lang');
         if ($this->_searched_email) {
             $dbquery->where('c.`email` LIKE \'%' . pSQL($this->_searched_email) . '%\' ');
@@ -506,7 +505,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $dbquery->from('emailsubscription', 'e');
         $dbquery->leftJoin('shop', 's', 's.id_shop = e.id_shop');
         $dbquery->leftJoin('lang', 'l', 'l.id_lang = e.id_lang');
-        $dbquery->where('e.`active` = 1');
         if ($this->_searched_email) {
             $dbquery->where('e.`email` LIKE \'%' . pSQL($this->_searched_email) . '%\' ');
         }
