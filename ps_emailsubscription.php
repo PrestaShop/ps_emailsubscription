@@ -614,7 +614,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 (
                     SELECT c.http_referer
                     FROM ' . _DB_PREFIX_ . 'connections c
-                    WHERE c.id_guest = ' . (int) $this->context->customer->id . '
+                    WHERE c.id_guest = ' . (int) $this->context->cookie->id_guest . '
                     ORDER BY c.date_add DESC LIMIT 1
                 ),
                 ' . (int) $active . ',
