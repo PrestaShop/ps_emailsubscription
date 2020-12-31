@@ -1431,7 +1431,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     public function hookActionDeleteGDPRCustomer($customer)
     {
         if (!empty($customer['email']) && Validate::isEmail($customer['email'])) {
-            $sql = 'DELETE FROM ' . _DB_PREFIX_ . "emailsubscription WHERE email = '" . pSQL($customer['email']) . "'";
+            $sql = 'DELETE FROM ' . _DB_PREFIX_ . "emailsubscription WHERE email = '" . pSQL($customer['email']) . "' AND id_shop = " . Context::getContext()->shop->id;
             if (Db::getInstance()->execute($sql)) {
                 return json_encode(true);
             }
@@ -1443,7 +1443,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     public function hookActionExportGDPRData($customer)
     {
         if (!Tools::isEmpty($customer['email']) && Validate::isEmail($customer['email'])) {
-            $sql = 'SELECT * FROM ' . _DB_PREFIX_ . "emailsubscription WHERE email = '" . pSQL($customer['email']) . "'";
+            $sql = 'SELECT * FROM ' . _DB_PREFIX_ . "emailsubscription WHERE email = '" . pSQL($customer['email']) . "' AND id_shop = " . Context::getContext()->shop->id;
             if ($res = Db::getInstance()->ExecuteS($sql)) {
                 return json_encode($res);
             }
