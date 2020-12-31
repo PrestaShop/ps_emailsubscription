@@ -297,6 +297,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper_list->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name;
         $helper_list->token = Tools::getAdminTokenLite('AdminModules');
         $helper_list->actions = array('viewCustomer');
+        $helper_list->_pagination = array(20, 50, 100);
+        $helper_list->_default_pagination = 20;
 
         // This is needed for displayEnableLink to avoid code duplication
         $this->_helperlist = $helper_list;
@@ -307,7 +309,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
         /* Paginate the result */
         $page = ($page = Tools::getValue('submitFilter' . $helper_list->table)) ? $page : 1;
-        $pagination = ($pagination = Tools::getValue($helper_list->table . '_pagination')) ? $pagination : 50;
+        $pagination = ($pagination = Tools::getValue($helper_list->table . '_pagination')) ? $pagination : 20;
         $subscribers = $this->paginateSubscribers($subscribers, $page, $pagination);
 
         return $helper_list->generateList($subscribers, $fields_list);
