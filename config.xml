@@ -2,7 +2,7 @@
 <module>
     <name>ps_emailsubscription</name>
     <displayName><![CDATA[E-mail subscription form]]></displayName>
-    <version><![CDATA[2.6.0]]></version>
+    <version><![CDATA[2.6.1]]></version>
     <description><![CDATA[Adds a block for newsletter subscription.]]></description>
     <author><![CDATA[PrestaShop]]></author>
     <confirmUninstall><![CDATA[Are you sure that you want to delete all of your contacts?]]></confirmUninstall>

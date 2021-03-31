@@ -32,7 +32,7 @@
   </p>
 
   {if $variables.conditions}
-    <p>{$variables.conditions nofilter}</p>
+    <p>{$variables.conditions}</p>
   {/if}
 
 {/block}
