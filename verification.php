@@ -23,8 +23,7 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
-
-require_once dirname(__FILE__).'/../../config/config.inc.php';
+require_once dirname(__FILE__) . '/../../config/config.inc.php';
 Tools::displayFileAsDeprecated();
 
 require_once 'ps_emailsubscription.php';
@@ -37,6 +36,6 @@ if (!Module::isInstalled($module->name)) {
 
 $token = Tools::getValue('token');
 
-require_once dirname(__FILE__).'/../../header.php';
+require_once dirname(__FILE__) . '/../../header.php';
 echo $module->confirmEmail($token);
-require_once dirname(__FILE__).'/../../footer.php';
+require_once dirname(__FILE__) . '/../../footer.php';

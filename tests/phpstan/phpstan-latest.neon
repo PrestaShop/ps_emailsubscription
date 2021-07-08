@@ -1,0 +1,7 @@
+includes:
+	- %currentWorkingDirectory%/tests/phpstan/phpstan.neon
+
+parameters:
+  ignoreErrors:
+    - '#Access to an undefined property Cookie::\$shop.#'
+    - '#Access to an undefined property HelperList::\$shopLinkType.#'

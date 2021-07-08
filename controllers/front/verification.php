@@ -26,6 +26,8 @@
 
 /**
  * @since 1.5.0
+ *
+ * @property Ps_Emailsubscription $module
  */
 class Ps_EmailsubscriptionVerificationModuleFrontController extends ModuleFrontController
 {
