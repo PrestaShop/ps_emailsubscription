@@ -41,6 +41,9 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     const GUEST_REGISTERED = 1;
     const CUSTOMER_REGISTERED = 2;
 
+    const NEWSLETTER_SUBSCRIPTION = 0;
+    const NEWSLETTER_UNSUBSCRIPTION = 1;
+
     const LEGAL_PRIVACY = 'LEGAL_PRIVACY';
 
     protected $_origin_newsletter;
@@ -77,10 +80,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      */
     public $post_errors;
     /**
-     * @var array
-     */
-    public $post_valid;
-    /**
      * @var HelperList
      */
     public $_helperlist;
@@ -88,6 +87,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     public function __construct()
     {
         $this->name = 'ps_emailsubscription';
+        $this->tab = 'pricing_promotion';
         $this->need_instance = 0;
 
         $this->controllers = ['verification', 'subscription'];
@@ -100,7 +100,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->confirmUninstall = $this->trans('Are you sure that you want to delete all of your contacts?', [], 'Modules.Emailsubscription.Admin');
         $this->ps_versions_compliancy = ['min' => '1.7.1.0', 'max' => _PS_VERSION_];
 
-        $this->version = '2.7.0';
+        $this->version = '2.7.1';
         $this->author = 'PrestaShop';
         $this->error = false;
         $this->valid = false;
@@ -115,19 +115,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->_searched_email = null;
 
         $this->_html = '';
-        if ($this->id) {
-            $this->file = 'export_' . Configuration::get('PS_NEWSLETTER_RAND') . '.csv';
-            $this->post_valid = [];
-
-            // Getting data...
-            $countries = Country::getCountries($this->context->language->id);
-
-            // ...formatting array
-            $countries_list = [$this->trans('All countries', [], 'Admin.Global')];
-            foreach ($countries as $country) {
-                $countries_list[$country['id_country']] = $country['name'];
-            }
-        }
     }
 
     public function install()
@@ -438,6 +425,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 'email' => $_POST['email'],
                 'action' => $_POST['action'],
                 'hookError' => &$hookError,
+                'module' => $this->name,
             ]
         );
         /** @var string|null $hookError */
@@ -447,7 +435,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
         if (empty($_POST['email']) || !Validate::isEmail($_POST['email'])) {
             return $this->error = $this->trans('Invalid email address.', [], 'Shop.Notifications.Error');
-        } elseif ($_POST['action'] == '1') {
+        } elseif ($_POST['action'] == static::NEWSLETTER_UNSUBSCRIPTION) {
             $register_status = $this->isNewsletterRegistered($_POST['email']);
 
             if ($register_status < 1) {
@@ -459,7 +447,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             }
 
             return $this->valid = $this->trans('Unsubscription successful.', [], 'Modules.Emailsubscription.Shop');
-        } elseif ($_POST['action'] == '0') {
+        } elseif ($_POST['action'] == static::NEWSLETTER_SUBSCRIPTION) {
             $register_status = $this->isNewsletterRegistered($_POST['email']);
             if ($register_status > 0) {
                 return $this->error = $this->trans('This email address is already registered.', [], 'Modules.Emailsubscription.Shop');
@@ -505,6 +493,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 'email' => $_POST['email'],
                 'action' => $_POST['action'],
                 'error' => &$this->error,
+                'module' => $this->name,
             ]
         );
 
@@ -749,6 +738,17 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         if (Configuration::get('NW_CONFIRMATION_EMAIL')) {
             $this->sendConfirmationEmail($email);
         }
+
+        Hook::exec(
+            'actionNewsletterRegistrationAfter',
+            [
+                'hookName' => null,
+                'email' => $email,
+                'action' => static::NEWSLETTER_SUBSCRIPTION,
+                'error' => &$this->error,
+                'module' => $this->name,
+            ]
+        );
 
         return $this->trans('Thank you for subscribing to our newsletter.', [], 'Modules.Emailsubscription.Shop');
     }
@@ -1007,6 +1007,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $label = $this->trans(
             'Sign up for our newsletter[1][2]%conditions%[/2]',
             [
+                '_raw' => true,
                 '[1]' => '<br>',
                 '[2]' => '<em>',
                 '%conditions%' => Tools::htmlentitiesUTF8(
@@ -1281,6 +1282,15 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     {
         if (!isset($this->context)) {
             $this->context = Context::getContext();
+        }
+
+        $this->file = 'export_' . Configuration::get('PS_NEWSLETTER_RAND') . '.csv';
+        // Getting data...
+        $countries = Country::getCountries($this->context->language->id);
+        // ...formatting array
+        $countries_list = [$this->trans('All countries', [], 'Admin.Global')];
+        foreach ($countries as $country) {
+            $countries_list[$country['id_country']] = $country['name'];
         }
 
         $result = $this->getCustomers();

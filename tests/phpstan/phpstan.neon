@@ -11,5 +11,4 @@ parameters:
     - ../../translations/
     - ../../upgrade/
     - ../../views/
-  reportUnmatchedIgnoredErrors: false
   level: 5
