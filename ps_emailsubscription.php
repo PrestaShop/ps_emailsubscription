@@ -228,7 +228,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
             if (preg_match('/(^N)/', $id)) {
                 $id = (int) Tools::substr($id, 1);
-                $sql = 'UPDATE ' . _DB_PREFIX_ . 'emailsubscription SET active = 0 WHERE id = ' . $id;
+                $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription WHERE id = ' . $id;
                 Db::getInstance()->execute($sql);
             } else {
                 $c = new Customer((int) $id);
