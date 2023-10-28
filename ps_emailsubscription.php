@@ -475,7 +475,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                         return $this->error = $this->trans('An error occurred during the subscription process.', [], 'Modules.Emailsubscription.Shop');
                     }
 
-                    if ($code = Configuration::get('NW_VOUCHER_CODE')) {
+                    $code = Configuration::get('NW_VOUCHER_CODE');
+                    if (!empty($code)) {
                         $this->sendVoucher($email, $code);
                     }
 
@@ -963,7 +964,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             if (Configuration::get('NW_CONFIRMATION_EMAIL')) {// send confirmation email
                 $this->sendConfirmationEmail($params['newCustomer']->email);
             }
-            if ($code = Configuration::get('NW_VOUCHER_CODE')) {// send voucher
+            $code = Configuration::get('NW_VOUCHER_CODE');
+            if (!empty($code)) {
                 $this->sendVoucher($params['newCustomer']->email, $code);
             }
         }
@@ -985,7 +987,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         if (Configuration::get('NW_CONFIRMATION_EMAIL')) {// send confirmation email
             $this->sendConfirmationEmail($params['customer']->email);
         }
-        if ($code = Configuration::get('NW_VOUCHER_CODE')) {
+        $code = Configuration::get('NW_VOUCHER_CODE');
+        if (!empty($code)) {
             $cartRule = CartRuleCore::getCartsRuleByCode($code, Context::getContext()->language->id);
             if (!Order::getDiscountsCustomer($params['customer']->id, $cartRule[0])) {// send voucher
                 $this->sendVoucher($params['customer']->email, $code);
