@@ -9,6 +9,10 @@
 
 Keep in touch with your customers the way you want, add a form to the homepage of your store and allow all the curious to subscribe to your newsletter.
 
+## Compatibility
+
+PrestaShop: `1.7.1.0` or later
+
 ## Multistore compatibility
 
 This module is partially compatible with the multistore feature. Some of its options might not be available.
@@ -28,6 +32,6 @@ Just make sure to follow our [contribution guidelines][contribution-guidelines].
 This module is released under the [Academic Free License 3.0][AFL-3.0] 
 
 [report-issue]: https://github.com/PrestaShop/PrestaShop/issues/new/choose
-[prestashop]: https://www.prestashop.com/
+[prestashop]: https://www.prestashop-project.org/
 [contribution-guidelines]: https://devdocs.prestashop.com/1.7/contribute/contribution-guidelines/project-modules/
 [AFL-3.0]: https://opensource.org/licenses/AFL-3.0
