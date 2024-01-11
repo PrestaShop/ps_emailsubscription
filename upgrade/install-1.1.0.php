@@ -27,7 +27,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-function upgrade_module_1_1($module)
+function upgrade_module_1_1_0($module)
 {
     $hook_to_remove_id = Hook::getIdByName('displayAfterBodyOpeningTag');
     if ($hook_to_remove_id) {
