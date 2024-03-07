@@ -11,3 +11,4 @@ parameters:
     - '#Parameter \#4 \$ssl of method LinkCore::getModuleLink\(\) expects null, true given.#'
     - '#Parameter \#4 \$templateVars of static method MailCore::Send\(\) expects string, array given.#'
     - '#Parameter \#4 \$templateVars of static method MailCore::Send\(\) expects string, array<string, string> given.#'
+    - '#Call to an undefined method Ps_EmailsubscriptionSubscriptionModuleFrontController::ajaxRender\(\).#'

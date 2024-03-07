@@ -100,7 +100,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->confirmUninstall = $this->trans('Are you sure that you want to delete all of your contacts?', [], 'Modules.Emailsubscription.Admin');
         $this->ps_versions_compliancy = ['min' => '1.7.1.0', 'max' => _PS_VERSION_];
 
-        $this->version = '2.8.1';
+        $this->version = '2.8.2';
         $this->author = 'PrestaShop';
         $this->error = false;
         $this->valid = false;
