@@ -505,6 +505,11 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function getSubscribers()
     {
+        $shopIds = [];
+        if (Shop::isFeatureActive()) {
+            $shopIds = Shop::getContextListShopID();
+        }
+
         $dbquery = new DbQuery();
         $dbquery->select('c.`id_customer` AS `id`, s.`name` AS `shop_name`, gl.`name` AS `gender`, c.`lastname`, c.`firstname`, c.`email`, c.`newsletter` AS `subscribed`, c.`newsletter_date_add`, l.`iso_code`');
         $dbquery->from('customer', 'c');
@@ -517,6 +522,10 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             $dbquery->where('c.`email` LIKE \'%' . pSQL($this->_searched_email) . '%\' ');
         }
 
+        if (!empty($shopIds)) {
+            $dbquery->where('c.`id_shop` IN (' . implode(',', $shopIds) . ')');
+        }
+
         $customers = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS($dbquery->build());
 
         $dbquery = new DbQuery();
@@ -527,6 +536,10 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $dbquery->where('e.`active` = 1');
         if ($this->_searched_email) {
             $dbquery->where('e.`email` LIKE \'%' . pSQL($this->_searched_email) . '%\' ');
+        }
+
+        if (!empty($shopIds)) {
+            $dbquery->where('e.`id_shop` IN (' . implode(',', $shopIds) . ')');
         }
 
         $non_customers = Db::getInstance()->executeS($dbquery->build());
