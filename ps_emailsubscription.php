@@ -977,7 +977,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 $this->sendVoucher($email, $code);
             }
 
-            return (bool) Db::getInstance()->execute('DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription WHERE id_shop=' . (int) $id_shop . ' AND email=\'' . pSQL($email) . "'");
+            return Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'emailsubscription` WHERE id_shop = ' . (int) $id_shop . 'AND email = "' . pSQL($email) . '"');
         }
 
         return true;
