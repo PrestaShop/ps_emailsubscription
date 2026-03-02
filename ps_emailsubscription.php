@@ -98,7 +98,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->displayName = $this->trans('Newsletter subscription', [], 'Modules.Emailsubscription.Admin');
         $this->description = $this->trans('Keep in touch with your customers the way you want, add a form to the homepage of your store and allow all the curious to subscribe to your newsletter.', [], 'Modules.Emailsubscription.Admin');
         $this->confirmUninstall = $this->trans('Are you sure that you want to delete all of your contacts?', [], 'Modules.Emailsubscription.Admin');
-        $this->ps_versions_compliancy = ['min' => '1.7.1.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => _PS_VERSION_];
 
         $this->version = '2.8.3';
         $this->author = 'PrestaShop';
@@ -1299,7 +1299,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function export_csv()
     {
-        if (!isset($this->context)) {
+        if ($this->context === null) {
             $this->context = Context::getContext();
         }
 
