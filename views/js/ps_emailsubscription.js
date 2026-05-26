@@ -23,7 +23,7 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 $(document).ready(function () {
-    $('.block_newsletter form').on('submit', function () {
+    $('.block_newsletter form, .ps-emailsubscription form').on('submit', function () {
         var psemailsubscriptionForm = $(this);
         if (typeof psemailsubscription_subscription === 'undefined') {
             return true;
