@@ -618,7 +618,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     protected function registerUser($email)
     {
         $sql = 'UPDATE ' . _DB_PREFIX_ . 'customer
-                SET `newsletter` = 1, newsletter_date_add = NOW(), `ip_registration_newsletter` = \'' . pSQL(Tools::getRemoteAddr()) . '\'
+                SET `newsletter` = 1, newsletter_date_add = \'' . date('Y-m-d H:i:s') . '\', `ip_registration_newsletter` = \'' . pSQL(Tools::getRemoteAddr()) . '\'
                 WHERE `email` = \'' . pSQL($email) . '\'
                 AND id_shop = ' . $this->context->shop->id;
 
@@ -640,7 +640,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                 (' . $this->context->shop->id . ',
                 ' . $this->context->shop->id_shop_group . ',
                 \'' . pSQL($email) . '\',
-                NOW(),
+                \'' . date('Y-m-d H:i:s') . '\',
                 \'' . pSQL(Tools::getRemoteAddr()) . '\',
                 (
                     SELECT c.http_referer
