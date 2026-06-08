@@ -411,9 +411,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      */
     public function newsletterRegistration($hookName = null)
     {
-        $isPrestaShopVersionOver177 = version_compare(_PS_VERSION_, '1.7.7', '>=');
-
-        if ($isPrestaShopVersionOver177 && ($hookName !== null)) {
+        if ($hookName !== null) {
             if (empty($_POST['blockHookName']) || $_POST['blockHookName'] !== $hookName) {
                 return false;
             }
