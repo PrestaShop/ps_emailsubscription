@@ -945,7 +945,24 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             'psemailsubscription_subscription' => $this->context->link->getModuleLink($this->name, 'subscription', [], true),
         ]);
 
-        $this->context->controller->registerJavascript('modules-psemailsubscription', 'modules/' . $this->name . '/views/js/ps_emailsubscription.js');
+        /** @var FrontController $controller */
+        $controller = $this->context->controller;
+        $controller->registerJavascript('modules-psemailsubscription', 'modules/' . $this->name . '/views/js/ps_emailsubscription.js');
+    }
+
+    /**
+     * Returns the admin controller with a concrete type. Context::$controller is typed
+     * as the PHPStan-opaque LegacyControllerContext on PrestaShop 9.x, which prevents
+     * static resolution of legacy controller methods such as getLanguages().
+     *
+     * @return AdminController
+     */
+    private function getAdminController()
+    {
+        /** @var AdminController $controller */
+        $controller = $this->context->controller;
+
+        return $controller;
     }
 
     /**
@@ -1124,7 +1141,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFieldsValues(),
-            'languages' => $this->context->controller->getLanguages(),
+            'languages' => $this->getAdminController()->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 
@@ -1225,7 +1242,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFieldsValues(),
-            'languages' => $this->context->controller->getLanguages(),
+            'languages' => $this->getAdminController()->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 
@@ -1264,7 +1281,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => ['searched_email' => $this->_searched_email],
-            'languages' => $this->context->controller->getLanguages(),
+            'languages' => $this->getAdminController()->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 

@@ -1,7 +1,2 @@
 includes:
 	- %currentWorkingDirectory%/tests/php/phpstan/phpstan.neon
-
-parameters:
-  ignoreErrors:
-    - '#Call to method registerJavascript\(\) on an unknown class PrestaShop\\PrestaShop\\Core\\Context\\LegacyControllerContext\.#'
-    - '#Call to method getLanguages\(\) on an unknown class PrestaShop\\PrestaShop\\Core\\Context\\LegacyControllerContext\.#'
