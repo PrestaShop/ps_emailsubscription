@@ -417,10 +417,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             }
         }
 
-        // Read the action through Tools::getValue() so a submission without it (bots, partial
-        // forms) does not raise "Undefined array key" warnings on PHP 8. A missing action keeps
-        // its previous meaning: it does not match the unsubscription value and is treated as a
-        // subscription, like before.
         $action = Tools::getValue('action');
 
         // hook for newsletter registration/unregistration : fill-in hookError string is there is an error
