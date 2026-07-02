@@ -417,6 +417,8 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             }
         }
 
+        $action = Tools::getValue('action');
+
         // hook for newsletter registration/unregistration : fill-in hookError string is there is an error
         $hookError = null;
         Hook::exec(
@@ -424,7 +426,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             [
                 'hookName' => $hookName,
                 'email' => $_POST['email'],
-                'action' => $_POST['action'],
+                'action' => $action,
                 'hookError' => &$hookError,
                 'module' => $this->name,
             ]
@@ -436,7 +438,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
         if (empty($_POST['email']) || !Validate::isEmail($_POST['email'])) {
             return $this->error = $this->trans('Invalid email address.', [], 'Shop.Notifications.Error');
-        } elseif ($_POST['action'] == static::NEWSLETTER_UNSUBSCRIPTION) {
+        } elseif ($action == static::NEWSLETTER_UNSUBSCRIPTION) {
             $register_status = $this->isNewsletterRegistered($_POST['email']);
 
             if ($register_status < 1) {
@@ -448,7 +450,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             }
 
             return $this->valid = $this->trans('Unsubscription successful.', [], 'Modules.Emailsubscription.Shop');
-        } elseif ($_POST['action'] == static::NEWSLETTER_SUBSCRIPTION) {
+        } elseif ($action == static::NEWSLETTER_SUBSCRIPTION) {
             $register_status = $this->isNewsletterRegistered($_POST['email']);
             if ($register_status > 0) {
                 return $this->error = $this->trans('This email address is already registered.', [], 'Modules.Emailsubscription.Shop');
@@ -492,7 +494,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             [
                 'hookName' => $hookName,
                 'email' => $_POST['email'],
-                'action' => $_POST['action'],
+                'action' => $action,
                 'error' => &$this->error,
                 'module' => $this->name,
             ]
