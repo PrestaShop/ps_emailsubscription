@@ -1040,16 +1040,16 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      */
     public function hookAdditionalCustomerFormFields($params)
     {
+        $conditions = Configuration::get('NW_CONDITIONS', $this->context->language->id);
+        $hasConditions = !empty($conditions);
         $label = $this->trans(
             'Sign up for our newsletter[1][2]%conditions%[/2]',
             [
                 '_raw' => true,
-                '[1]' => '<br>',
-                '[2]' => '<em>',
-                '%conditions%' => Tools::htmlentitiesUTF8(
-                    Configuration::get('NW_CONDITIONS', $this->context->language->id)
-                ),
-                '[/2]' => '</em>',
+                '[1]' => $hasConditions ? '<br>' : '',
+                '[2]' => $hasConditions ? '<em>' : '',
+                '%conditions%' => $hasConditions ? Tools::htmlentitiesUTF8($conditions) : '',
+                '[/2]' => $hasConditions ? '</em>' : '',
             ],
             'Modules.Emailsubscription.Shop'
         );
