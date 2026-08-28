@@ -1007,14 +1007,29 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     public function hookActionObjectCustomerUpdateBefore($params)
     {
+        // Reload the customer to get the newsletter state currently persisted in the database.
+        // $params['object'] already contains the new value that is about to be saved.
+        // Comparing both states allows us to detect an actual subscription transition (0 -> 1)
+        // and avoid removing an existing email subscription during unrelated customer updates.
         $customer = new Customer($params['object']->id);
         $this->_origin_newsletter = (int) $customer->newsletter;
 
-        Db::getInstance()->execute('DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription WHERE id_shop=' . (int) $params['object']->id_shop . ' AND email=\'' . pSQL($params['object']->email) . "'");
+        // Only handle a real newsletter subscription transition (0 -> 1).
+        // Existing email subscriptions must be preserved for unrelated customer updates.
+        if ($this->_origin_newsletter || !$params['object']->newsletter) {
+            return;
+        }
+
+        Db::getInstance()->execute(
+            'DELETE FROM ' . _DB_PREFIX_ . 'emailsubscription
+            WHERE id_shop=' . (int) $params['object']->id_shop . '
+            AND email=\'' . pSQL($params['object']->email) . "'"
+        );
     }
 
     public function hookActionCustomerAccountUpdate($params)
     {
+        // Send newsletter-related emails only when the customer has just subscribed (0 -> 1).
         if ($this->_origin_newsletter || !$params['customer']->newsletter) {
             return;
         }
