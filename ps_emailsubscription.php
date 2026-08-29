@@ -774,7 +774,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      *
      * @param string $email Email where to send the confirmation
      *
-     * @note the email has been verified and might not yet been registered. Called by AuthController::processCustomerNewsletter
+     * @note The email has already been verified or verification is not required.
      */
     public function confirmSubscription($email)
     {
@@ -968,7 +968,50 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     }
 
     /**
-     * Deletes duplicates email in newsletter table.
+     * Returns the status of an existing guest newsletter subscription.
+     *
+     * @param string $email
+     * @param int $idShop
+     *
+     * @return bool|null True when active, false when pending verification, null when not found
+     */
+    private function getGuestNewsletterSubscriptionStatus($email, $idShop)
+    {
+        $status = Db::getInstance()->getValue(
+            'SELECT `active`
+            FROM `' . _DB_PREFIX_ . 'emailsubscription`
+            WHERE `id_shop` = ' . (int) $idShop . '
+            AND `email` = \'' . pSQL($email) . '\''
+        );
+
+        if ($status === false) {
+            return null;
+        }
+
+        return (bool) $status;
+    }
+
+    /**
+     * Marks a customer newsletter subscription as pending verification.
+     *
+     * @param int $idCustomer
+     * @param int $idShop
+     *
+     * @return bool
+     */
+    private function setCustomerNewsletterPending($idCustomer, $idShop)
+    {
+        return Db::getInstance()->execute(
+            'UPDATE `' . _DB_PREFIX_ . 'customer`
+            SET `newsletter` = 0
+            WHERE `id_customer` = ' . (int) $idCustomer . '
+            AND `id_shop` = ' . (int) $idShop
+        );
+    }
+
+    /**
+     * Handles newsletter registration when a customer account is created and removes
+     * any matching guest subscription to prevent duplicates.
      *
      * @param array $params
      *
@@ -976,28 +1019,55 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
      */
     public function hookActionCustomerAccountAdd($params)
     {
-        //if e-mail of the created user address has already been added to the newsletter through the ps_emailsubscription module,
-        //we delete it from ps_emailsubscription table to prevent duplicates
         if (empty($params['newCustomer'])) {
             return false;
         }
 
-        $id_shop = $params['newCustomer']->id_shop;
-        $email = $params['newCustomer']->email;
+        $customer = $params['newCustomer'];
+        $idShop = (int) $customer->id_shop;
+        $email = $customer->email;
 
         if (!Validate::isEmail($email)) {
             return false;
         }
 
-        if ($params['newCustomer']->newsletter) {
-            if ($code = Configuration::get('NW_VOUCHER_CODE')) {
-                $this->sendVoucher($email, $code);
-            }
-
-            return Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'emailsubscription` WHERE id_shop = ' . (int) $id_shop . ' AND email = "' . pSQL($email) . '"');
+        // Keep an existing guest subscription untouched when the newly created account
+        // has not opted in to the newsletter.
+        if (!$customer->newsletter) {
+            return true;
         }
 
-        return true;
+        $guestSubscriptionStatus = $this->getGuestNewsletterSubscriptionStatus($email, $idShop);
+
+        if (Configuration::get('NW_VERIFICATION_EMAIL') && $guestSubscriptionStatus !== true) {
+            // The customer is already stored with newsletter = 1 at this point. Set it back
+            // to 0 until the verification link is confirmed, so the existing token flow can
+            // activate the subscription through confirmEmail().
+            if (!$this->setCustomerNewsletterPending((int) $customer->id, $idShop)) {
+                return false;
+            }
+
+            if (!$token = $this->getToken($email, self::CUSTOMER_NOT_REGISTERED)) {
+                return false;
+            }
+
+            $this->sendVerificationEmail($email, $token);
+        } elseif ($guestSubscriptionStatus !== true) {
+            // No verification is required: send the voucher and confirmation email
+            // according to the module configuration.
+            $this->confirmSubscription($email);
+        } elseif ($code = Configuration::get('NW_VOUCHER_CODE')) {
+            // Preserve the existing behavior for an already active guest subscription.
+            $this->sendVoucher($email, $code);
+        }
+
+        // If the customer's email was already added to the newsletter through
+        // the ps_emailsubscription module, remove it to prevent duplicates.
+        return Db::getInstance()->execute(
+            'DELETE FROM `' . _DB_PREFIX_ . 'emailsubscription`
+            WHERE `id_shop` = ' . $idShop . '
+            AND `email` = \'' . pSQL($email) . '\''
+        );
     }
 
     public function hookActionObjectCustomerUpdateBefore($params)
@@ -1082,6 +1152,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                         'type' => 'switch',
                         'label' => $this->trans('Would you like to send a verification email after subscription?', [], 'Modules.Emailsubscription.Admin'),
                         'name' => 'NW_VERIFICATION_EMAIL',
+                        'desc' => $this->trans('This setting also applies when a customer subscribes to the newsletter during account registration.', [], 'Modules.Emailsubscription.Admin'),
                         'values' => [
                             [
                                 'id' => 'active_on',
@@ -1099,6 +1170,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
                         'type' => 'switch',
                         'label' => $this->trans('Would you like to send a confirmation email after subscription?', [], 'Modules.Emailsubscription.Admin'),
                         'name' => 'NW_CONFIRMATION_EMAIL',
+                        'desc' => $this->trans('This setting also applies when a customer subscribes to the newsletter during account registration.', [], 'Modules.Emailsubscription.Admin'),
                         'values' => [
                             [
                                 'id' => 'active_on',
