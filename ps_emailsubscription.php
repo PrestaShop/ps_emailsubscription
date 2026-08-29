@@ -1508,8 +1508,9 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     public function hookActionExportGDPRData($customer)
     {
         if (!Tools::isEmpty($customer['email']) && Validate::isEmail($customer['email'])) {
-            $sql = 'SELECT * FROM ' . _DB_PREFIX_ . "emailsubscription WHERE email = '" . pSQL($customer['email']) . "'";
-            if ($res = Db::getInstance()->executeS($sql)) {
+            $this->_searched_email = $customer['email'];
+
+            if ($res = $this->getSubscribers()) {
                 return json_encode($res);
             }
 
