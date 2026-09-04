@@ -34,34 +34,9 @@ if (!defined('_PS_VERSION_')) {
  */
 function upgrade_module_3_0_1($module)
 {
-    $result = true;
-
-    if (!ps_emailsubscription_index_exists('emailsubscription', 'email')) {
-        $result = $result && Db::getInstance()->execute(
-            'ALTER TABLE `' . _DB_PREFIX_ . 'emailsubscription` ADD KEY `email` (`email`)'
-        );
-    }
-
-    if (!ps_emailsubscription_index_exists('emailsubscription', 'id_shop_lang')) {
-        $result = $result && Db::getInstance()->execute(
-            'ALTER TABLE `' . _DB_PREFIX_ . 'emailsubscription` ADD KEY `id_shop_lang` (`id_shop`, `id_lang`)'
-        );
-    }
-
-    return $result;
-}
-
-/**
- * @param string $table Table name without prefix
- * @param string $indexName
- *
- * @return bool
- */
-function ps_emailsubscription_index_exists($table, $indexName)
-{
-    $row = Db::getInstance()->getRow(
-        'SHOW INDEX FROM `' . _DB_PREFIX_ . bqSQL($table) . '` WHERE Key_name = \'' . pSQL($indexName) . '\''
+    return Db::getInstance()->execute(
+        'ALTER TABLE `' . _DB_PREFIX_ . 'emailsubscription`
+        ADD KEY `email` (`email`),
+        ADD KEY `id_shop_lang` (`id_shop`, `id_lang`)'
     );
-
-    return !empty($row);
 }
