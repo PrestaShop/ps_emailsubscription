@@ -100,7 +100,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->confirmUninstall = $this->trans('Are you sure that you want to delete all of your contacts?', [], 'Modules.Emailsubscription.Admin');
         $this->ps_versions_compliancy = ['min' => '8.2.0', 'max' => _PS_VERSION_];
 
-        $this->version = '3.0.0';
+        $this->version = '3.0.1';
         $this->author = 'PrestaShop';
         $this->error = false;
         $this->valid = false;
@@ -168,7 +168,9 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             `http_referer` VARCHAR(255) NULL,
             `active` TINYINT(1) NOT NULL DEFAULT \'0\',
             `id_lang` int(10) NOT NULL DEFAULT \'0\',
-            PRIMARY KEY(`id`)
+            PRIMARY KEY(`id`),
+            KEY `email` (`email`),
+            KEY `id_shop_lang` (`id_shop`, `id_lang`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' default CHARSET=utf8');
     }
 
