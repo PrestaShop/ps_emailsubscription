@@ -953,21 +953,6 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
     }
 
     /**
-     * Returns the admin controller with a concrete type. Context::$controller is typed
-     * as the PHPStan-opaque LegacyControllerContext on PrestaShop 9.x, which prevents
-     * static resolution of legacy controller methods such as getLanguages().
-     *
-     * @return AdminController
-     */
-    private function getAdminController()
-    {
-        /** @var AdminController $controller */
-        $controller = $this->context->controller;
-
-        return $controller;
-    }
-
-    /**
      * Deletes duplicates email in newsletter table.
      *
      * @param array $params
@@ -1153,7 +1138,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFieldsValues(),
-            'languages' => $this->getAdminController()->getLanguages(),
+            'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 
@@ -1254,7 +1239,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFieldsValues(),
-            'languages' => $this->getAdminController()->getLanguages(),
+            'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 
@@ -1293,7 +1278,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = [
             'fields_value' => ['searched_email' => $this->_searched_email],
-            'languages' => $this->getAdminController()->getLanguages(),
+            'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
 
