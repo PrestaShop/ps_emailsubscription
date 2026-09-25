@@ -1427,11 +1427,37 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
 
     private function myFputCsv($fd, $array)
     {
-        $line = implode(';', $array);
-        $line .= "\n";
-        if (!fwrite($fd, $line, 4096)) {
+        $sanitizedRow = $this->sanitizeCsvRow($array);
+
+        if (false === fputcsv($fd, $sanitizedRow, ';', '"', '\\')) {
             $this->post_errors[] = $this->trans('Error: Write access limited', [], 'Modules.Emailsubscription.Admin') . ' ' . dirname(__FILE__) . '/' . $this->file . ' !';
         }
+    }
+
+    /**
+     * Sanitizes a row to prevent CSV formula injection when opened in spreadsheet software.
+     *
+     * Values starting with =, +, -, @, tab or carriage return are prefixed with a single quote.
+     *
+     * @param array $row
+     *
+     * @return array
+     */
+    private function sanitizeCsvRow(array $row)
+    {
+        return array_map(function ($value) {
+            if ($value === null) {
+                return '';
+            }
+
+            $value = (string) $value;
+
+            if ($value !== '' && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+                return "'" . $value;
+            }
+
+            return $value;
+        }, $row);
     }
 
     private function getConditionFixtures($lang)
