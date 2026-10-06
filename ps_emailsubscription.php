@@ -169,8 +169,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
             `active` TINYINT(1) NOT NULL DEFAULT \'0\',
             `id_lang` int(10) NOT NULL DEFAULT \'0\',
             PRIMARY KEY(`id`),
-            KEY `email_shop` (`email`, `id_shop`),
-            KEY `active_shop` (`active`, `id_shop`)
+            KEY `email_shop` (`email`, `id_shop`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' default CHARSET=utf8');
     }
 

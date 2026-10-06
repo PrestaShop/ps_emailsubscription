@@ -36,7 +36,6 @@ function upgrade_module_3_0_1($module)
 {
     return Db::getInstance()->execute(
         'ALTER TABLE `' . _DB_PREFIX_ . 'emailsubscription`
-        ADD KEY `email_shop` (`email`, `id_shop`),
-        ADD KEY `active_shop` (`active`, `id_shop`)'
+        ADD KEY `email_shop` (`email`, `id_shop`)'
     );
 }
