@@ -40,6 +40,7 @@ class Ps_EmailsubscriptionSubscriptionModuleFrontController extends ModuleFrontC
     {
         $this->variables['value'] = Tools::getValue('email', '');
         $this->variables['msg'] = '';
+        $this->variables['nw_error'] = false;
         $this->variables['conditions'] = Configuration::get('NW_CONDITIONS', $this->context->language->id);
 
         if (Tools::isSubmit('submitNewsletter') || $this->ajax) {
@@ -49,7 +50,6 @@ class Ps_EmailsubscriptionSubscriptionModuleFrontController extends ModuleFrontC
                 $this->variables['nw_error'] = true;
             } elseif ($this->module->valid) {
                 $this->variables['msg'] = $this->module->valid;
-                $this->variables['nw_error'] = false;
             }
 
             if ($this->ajax) {
