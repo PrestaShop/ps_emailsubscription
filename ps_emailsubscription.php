@@ -99,6 +99,7 @@ class Ps_Emailsubscription extends Module implements WidgetInterface
         $this->description = $this->trans('Keep in touch with your customers the way you want, add a form to the homepage of your store and allow all the curious to subscribe to your newsletter.', [], 'Modules.Emailsubscription.Admin');
         $this->confirmUninstall = $this->trans('Are you sure that you want to delete all of your contacts?', [], 'Modules.Emailsubscription.Admin');
         $this->ps_versions_compliancy = ['min' => '8.2.0', 'max' => _PS_VERSION_];
+        $this->module_key = '408db9d0f0d35b41b2f14971647591aa';
 
         $this->version = '3.0.0';
         $this->author = 'PrestaShop';
